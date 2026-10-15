@@ -35,16 +35,26 @@ SYS = (
 def parse_answer(text: str) -> dict:
     """Строгий парс структуры 1) 2) 3). Фолбэк — весь текст в summary."""
     t = re.sub(r"<think>[\s\S]*?</think>", "", text).strip()
+    t = re.sub(r"\[\s*Prompt:[\s\S]*$", "", t)          # хвост логов llama.cpp
+    t = re.sub(r"Exiting\.\.\.\s*$", "", t).strip()      # финал интерактив-режима
     t = re.sub(r"^\s*assistant\s*", "", t).strip()
     m1 = re.search(r"1\)\s*([\s\S]*?)\n\s*2\)", t)
     m2 = re.search(r"2\)\s*([\s\S]*?)\n\s*3\)", t)
     m3 = re.search(r"3\)\s*([\s\S]*)$", t)
+    def _clean(b: str) -> str:
+        b = re.sub(r"\*\*", "", b)                            # markdown-жирный
+        b = re.sub(r"^\s*[-—•*]\s*", "", b)                    # маркеры списков
+        b = re.sub(r"^[Бб]уллеты по доменам\s*[:.]?\s*", "", b)  # заголовок-мусор
+        b = re.sub(r"\s+", " ", b).strip()
+        return b
+
     if m1 and m2 and m3:
         summary = re.sub(r"\s+", " ", m1.group(1)).strip()
         raw_bullets = m2.group(1).strip()
-        bullets = [b.strip(" \t-—•*") for b in raw_bullets.split(";")]
-        bullets = [b for b in bullets if len(b) > 3][:6]
-        practical = re.sub(r"\s+", " ", m3.group(1)).strip()
+        bullets = [_clean(b) for b in raw_bullets.split(";")]
+        bullets = [b for b in bullets if len(b) > 15][:6]
+        practical = re.sub(r"\s+", " ", _clean(m3.group(1))).strip()
+        practical = re.sub(r"^3\)\s*", "", practical)
     else:
         summary = re.sub(r"\s+", " ", t)[:1200]
         bullets, practical = [], ""

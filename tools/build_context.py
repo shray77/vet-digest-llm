@@ -104,8 +104,7 @@ def main() -> None:
                 continue
             top = max(nodes, key=lambda x: x.get("r") or 0)
             lines.append(f"  {fw.get('short') or fw.get('label')}: R={top.get('r')} "
-                         f"(узел {top.get('name')}, канал {top.get('chan')}), "
-                         f"HG={top.get('hg')}")
+                         f"(узел {top.get('name')}, канал {top.get('chan')})")
             n += 1
         al = flu.get("alert") or {}
         if al.get("level"):

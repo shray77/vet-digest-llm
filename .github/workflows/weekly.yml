@@ -1,0 +1,87 @@
+name: weekly-digest
+
+# Еженедельный LLM-дайджест экосистемы: контекст из живых JSON (build_context.py)
+# → llama.cpp + Qwen3-1.7B (Q8_0, Apache-2.0) на CPU-раннере → data/llm_digest.json
+# + архив data/archive/YYYY-Wnn.json. Модель и рантайм кэшируются actions/cache
+# (1.8 ГБ GGUF не перекачивается каждую неделю — паттерн vetflu-forecast).
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # понедельник 06:00 UTC (после forecast-ранов vetflu)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-digest
+  cancel-in-progress: false
+
+env:
+  LLAMA_TAG: b11645
+  MODEL_URL: https://huggingface.co/Qwen/Qwen3-1.7B-GGUF/resolve/main/Qwen3-1.7B-Q8_0.gguf
+  MODEL_REV: Qwen3-1.7B-Q8_0   # ревизия для ключа кэша
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Cache модели и рантайма
+        uses: actions/cache@v4
+        with:
+          path: |
+            runner-bin/llama-cli
+            runner-bin/libllama.so
+            model/qwen3.gguf
+          key: vdl-${{ env.LLAMA_TAG }}-${{ env.MODEL_REV }}
+
+      - name: Рантайм llama.cpp (CPU, пин b11645)
+        run: |
+          mkdir -p runner-bin model
+          if [ ! -x runner-bin/llama-cli ]; then
+            curl -sL "https://github.com/ggml-org/llama.cpp/releases/download/${LLAMA_TAG}/llama-${LLAMA_TAG}-bin-ubuntu-x64.tar.gz" -o /tmp/llama.tar.gz
+            tar xzf /tmp/llama.tar.gz -C /tmp
+            find /tmp/llama-* -name 'llama-cli' -exec cp {} runner-bin/ \;
+            find /tmp/llama-* -name 'libllama.so' -exec cp {} runner-bin/ \; || true
+          fi
+          chmod +x runner-bin/llama-cli || true
+          LD_LIBRARY_PATH=$PWD/runner-bin runner-bin/llama-cli --version
+
+      - name: Модель Qwen3-1.7B (Q8_0, ~1.8 ГБ)
+        run: |
+          if [ ! -s model/qwen3.gguf ]; then
+            curl -sL --retry 3 -A "Mozilla/5.0" "${MODEL_URL}" -o model/qwen3.gguf
+          fi
+          ls -la model/
+
+      - name: Контекст недели из живых JSON экосистемы
+        run: |
+          python3 tools/build_context.py > /tmp/context.json
+          python3 -c "import json; d=json.load(open('/tmp/context.json')); print(d['context'][:600]); print('...'); print('stats:', d['stats'])"
+
+      - name: Инференс дайджеста
+        run: |
+          export LD_LIBRARY_PATH=$PWD/runner-bin:${LD_LIBRARY_PATH:-}
+          python3 tools/run_digest.py \
+            --context-file /tmp/context.json \
+            --llama runner-bin/llama-cli \
+            --model model/qwen3.gguf \
+            --out data/llm_digest.json \
+            --archive-dir data/archive
+          python3 -c "import json; d=json.load(open('data/llm_digest.json')); print('HEADLINE:', d['headline']); print('bullets:', len(d['bullets']))"
+
+      - name: Коммит данных
+        run: |
+          git config user.name "vet-digest-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "Нет изменений — пропускаем коммит"
+          else
+            git commit -m "digest: [skip ci]"
+            git pull --rebase -q origin main || true
+            git push origin HEAD:main
+          fi

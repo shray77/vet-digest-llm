@@ -1,0 +1,33 @@
+name: pages
+
+# Деплой витрины (корень репо: index.html + data/) на GitHub Pages.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-vdl
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/configure-pages@v5
+      - name: Артефакт сайта
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Деплой
+        id: deployment
+        uses: actions/deploy-pages@v4

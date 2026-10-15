@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VetDigest LLM — еженедельный дайджест экосистемы</title>
+<meta name="description" content="Еженедельный машинный дайджест ветеринарной экосистемы: окна риска ВПГП, мировые вспышки, фармаконадзор РФ, PubMed-тезисы. LLM Qwen3 на GitHub Actions, без ключей.">
+<meta property="og:title" content="VetDigest LLM — еженедельный дайджест экосистемы">
+<meta property="og:description" content="Машинный еженедельный дайджест экосистемы vet-*: эпизоотология, фармаконадзор, наука. Qwen3-1.7B + llama.cpp на Actions.">
+<meta property="og:type" content="website">
+<link rel="alternate" type="application/json" title="llm_digest.json" href="data/llm_digest.json">
+<style>
+:root{--bg:#0b0f14;--card:#111823;--card2:#0e141d;--border:#1d2734;--text:#dce7f2;--dim:#8296ab;--muted:#5c7089;--accent:#38bdf8;--accent2:#34d399;--warn:#fbbf24;--bad:#f87171}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:15px/1.55 -apple-system,'Segoe UI',Roboto,Arial,sans-serif;padding:20px 16px 40px}
+.wrap{max-width:880px;margin:0 auto}
+.hub{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;font-size:12.5px}
+.hub a{color:var(--dim);text-decoration:none;background:var(--card2);border:1px solid var(--border);padding:4px 10px;border-radius:99px}
+.hub a.on{color:var(--accent);border-color:var(--accent)}
+h1{font-size:23px;margin:6px 0 2px}
+.sub{color:var(--dim);font-size:13px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+.k{font-size:11px;letter-spacing:.8px;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+.week{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.week b{font-size:15px}
+.chip{font-size:11.5px;border:1px solid var(--border);border-radius:99px;padding:2px 9px;color:var(--dim)}
+.chip.ok{color:var(--accent2);border-color:var(--accent2)}
+.chip.warn{color:var(--warn);border-color:var(--warn)}
+#meta{color:var(--muted);font-size:12px;margin:4px 0 0}
+#summary{font-size:16px;line-height:1.6}
+ul.b{list-style:none;margin-top:6px}
+ul.b li{padding:7px 0 7px 22px;position:relative;border-top:1px solid var(--border)}
+ul.b li:first-child{border-top:none}
+ul.b li::before{content:'▸';position:absolute;left:2px;color:var(--accent)}
+#practical{border-left:3px solid var(--accent2);padding:6px 12px;background:var(--card2);border-radius:0 8px 8px 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:10px}
+.stat{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center}
+.stat b{display:block;font-size:17px;color:var(--accent)}
+.stat span{font-size:11px;color:var(--muted)}
+.disc{color:var(--muted);font-size:12px;margin-top:12px}
+.src{margin-top:8px;font-size:12.5px}
+.src a{color:var(--accent);text-decoration:none}
+.arc{font-size:12.5px;color:var(--dim);margin-top:10px}
+.arc a{color:var(--accent);text-decoration:none;margin-right:12px}
+.err{color:var(--bad);font-size:13px}
+footer{color:var(--muted);font-size:11.5px;margin-top:22px;line-height:1.6}
+footer a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="hub">
+    <a href="https://shray77.github.io/">Визитка</a>
+    <a href="https://shray77.github.io/vet-hub/">ВетХаб</a>
+    <a href="https://shray77.github.io/vetdigest-site/">Дайджест</a>
+    <a href="https://shray77.github.io/biothreat-site/">Биоугрозы</a>
+    <a href="https://shray77.github.io/vetrecall-site/">Отзывы</a>
+    <a href="https://shray77.github.io/vetflu-site/">ВПГП</a>
+    <a class="on" href="./">LLM-дайджест</a>
+  </nav>
+
+  <h1>VetDigest LLM</h1>
+  <div class="sub">еженедельный машинный дайджест экосистемы · Qwen3-1.7B + llama.cpp · GitHub Actions (понедельник 06:00 UTC)</div>
+
+  <div class="card">
+    <div class="week">
+      <b id="week">—</b>
+      <span class="chip" id="fresh">загрузка…</span>
+      <span class="chip" id="model"></span>
+    </div>
+    <p id="meta"></p>
+  </div>
+
+  <div class="card" id="mainCard">
+    <div class="k">Главное за неделю</div>
+    <p id="summary" class="err">загрузка data/llm_digest.json…</p>
+    <ul class="b" id="bullets"></ul>
+  </div>
+
+  <div class="card" id="pracCard" style="display:none">
+    <div class="k">Что это значит практически</div>
+    <p id="practical"></p>
+  </div>
+
+  <div class="card" id="statsCard" style="display:none">
+    <div class="k">Данные недели</div>
+    <div class="stats" id="stats"></div>
+    <div class="src" id="srcs"></div>
+  </div>
+
+  <div class="card" id="arcCard" style="display:none">
+    <div class="k">Архив выпусков</div>
+    <div class="arc" id="archive"></div>
+  </div>
+
+  <p class="disc" id="disc"></p>
+
+  <footer>
+    Информационный сервис «как есть» · не ветеринарная консультация · текст генерируется малой LLM по публичным данным экосистемы и может содержать ошибки — проверяйте первоисточники · <a href="./terms.html">условия и дисклеймер</a> · <a href="https://shray77.github.io/terms.html">условия экосистемы</a>
+  </footer>
+</div>
+
+<script>
+const STAT_RU = {flu_flyways:'флайвеев ВПГП', events:'вспышек в мире', signals:'сигналов РФ', pubmed:'PubMed-тезисов', sources_ok:'источников ok'};
+const SRC_RU = {vetflu:'ВПГП-окна', biothreat:'Биоугрозы', vetrecall:'Отзывы РФ', vetdigest:'PubMed', hub:'ВетХаб'};
+async function jget(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(r.status);return r.json();}
+(async()=>{
+  try{
+    const d = await jget('data/llm_digest.json');
+    document.getElementById('week').textContent = 'Неделя ' + (d.week_key||'');
+    const ageH = Math.max(0,(Date.now()-new Date(d.generated_at).getTime())/36e5);
+    const fr = document.getElementById('fresh');
+    fr.textContent = ageH<170 ? 'свежий · '+Math.round(ageH)+' ч' : ('протух ('+Math.round(ageH/24)+' дн)');
+    fr.className = 'chip ' + (ageH<170 ? 'ok' : 'warn');
+    document.getElementById('model').textContent = (d.model||{}).name || '';
+    document.getElementById('meta').textContent = 'сгенерирован ' + (d.generated_at||'').replace('T',' ').slice(0,16) + ' UTC';
+    document.getElementById('summary').className = '';
+    document.getElementById('summary').textContent = d.summary || '—';
+    const ul = document.getElementById('bullets'); ul.innerHTML = '';
+    for(const b of (d.bullets||[])){const li=document.createElement('li');li.textContent=b;ul.appendChild(li);}
+    if(d.practical){document.getElementById('pracCard').style.display='block';document.getElementById('practical').textContent=d.practical;}
+    const st = document.getElementById('stats'); st.innerHTML='';
+    const s = d.stats||{};
+    for(const [k,v] of Object.entries(s)){const el=document.createElement('div');el.className='stat';el.innerHTML='<b></b><span></span>';el.querySelector('b').textContent=v;el.querySelector('span').textContent=STAT_RU[k]||k;st.appendChild(el);}
+    document.getElementById('statsCard').style.display='block';
+    const sr = document.getElementById('srcs'); const parts=[];
+    for(const [k,v] of Object.entries(d.sources||{})) parts.push('<a href="'+v+'" target="_blank" rel="noopener">'+(SRC_RU[k]||k)+'</a>');
+    sr.innerHTML = 'источники: ' + parts.join(' · ');
+    document.getElementById('disc').textContent = d.disclaimer || '';
+    try{
+      const list = await jget('data/archive/list.json');
+      if(Array.isArray(list) && list.length>1){
+        document.getElementById('arcCard').style.display='block';
+        document.getElementById('archive').innerHTML = list.map(e=>'<a href="data/archive/'+e.week_key+'.json">'+e.week_key+'</a>').join('');
+      }
+    }catch(e){}
+  }catch(e){
+    document.getElementById('summary').textContent = 'не удалось загрузить дайджест: ' + e.message;
+  }
+})();
+</script>
+</body>
+</html>

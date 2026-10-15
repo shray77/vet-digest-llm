@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Условия использования и дисклеймер — VetDigest LLM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{--bg:#0b0f14;--card:#111823;--border:#1d2734;--text:#dce7f2;--dim:#8296ab;--accent:#38bdf8;--warn:#fbbf24}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:15px/1.62 -apple-system,'Segoe UI',Roboto,Arial,sans-serif;padding:24px 16px 40px}
+.wrap{max-width:760px;margin:0 auto}
+.hub{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;font-size:12.5px}
+.hub a{color:var(--dim);text-decoration:none;background:var(--card);border:1px solid var(--border);padding:4px 10px;border-radius:99px}
+h1{font-size:21px;margin:4px 0 4px}
+.ver{color:var(--dim);font-size:12.5px;margin-bottom:16px}
+.tldr{background:var(--card);border:1px solid var(--warn);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.tldr b{color:var(--warn)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+h2{font-size:14px;letter-spacing:.6px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+p{margin:0 0 9px}
+ul{margin:0 0 9px 18px}
+li{margin-bottom:5px}
+a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="hub"><a href="./">← VetDigest LLM</a><a href="https://shray77.github.io/terms.html">условия экосистемы</a></nav>
+  <h1>Условия использования и дисклеймер</h1>
+  <div class="ver">Версия от 15.10.2026 (ред. 2) · Rossiyskaya federatsiya-agnostic, англо-паттерн сохранён</div>
+
+  <div class="tldr"><b>TL;DR:</b> сервис «как есть». Это машинный дайджест: текст генерируется малой языковой моделью (Qwen3-1.7B) по публичным данным экосистемы. Возможны ошибки, пропуски и искажения — всегда проверяйте первоисточники. Это не ветеринарный совет — консультируйтесь с ветеринарным врачом, даже если вы сами ветеринарный врач.</div>
+
+  <div class="card"><h2>1. Что это</h2>
+    <p>VetDigest LLM — еженедельная текстовая сводка, которую языковая модель составляет из данных ветеринарной экосистемы (окна риска ВПГП VetFlu, мировые вспышки Biothreat, сигналы фармаконадзора VetRecall, PubMed-тезисы VetDigest). Выпуск обновляется по расписанию GitHub Actions.</p></div>
+
+  <div class="card"><h2>2. Машинная генерация и её ограничения</h2>
+    <ul>
+      <li>Тексты дайджеста порождены моделью Qwen3-1.7B-Instruct (Apache-2.0) и могут содержать фактические ошибки, смешение событий, неточные формулировки.</li>
+      <li>Модель видит только компактную выборку данных недели; за её пределами остаются события, которые в дайджест не попали.</li>
+      <li>Числа и статусы в блоках «Данные недели» берутся из исходных JSON напрямую; текстовая часть — генерация модели.</li>
+    </ul></div>
+
+  <div class="card"><h2>3. Как есть, никакой ответственности</h2>
+    <p>Сервис предоставляется «как есть», без каких-либо гарантий. Автор не отвечает за решения, принятые на основе дайджеста. Любые автоматические расчёты и сводки — вспомогательный материал: перепроверяйте вручную, ошибка возможна и в самом расчёте.</p></div>
+
+  <div class="card"><h2>4. Не ветеринарная консультация</h2>
+    <p>Сервис не является ветеринарной консультацией и не заменяет её. Консультируйтесь с ветеринарным врачом — даже если вы сами ветеринарный врач. Официальные каналы Россельхознадзора (ФСВПС) и WOAH имеют приоритет над любыми сводками экосистемы.</p></div>
+
+  <div class="card"><h2>5. Данные и источники</h2>
+    <p>Сводка опирается на публичные JSON-каналы экосистемы (VetFlu, Biothreat, VetRecall, VetDigest, rss-core). Первоисточники вспышек — WOAH WAHIS и открытые фиды; фармаконадзор — зеркало публикаций Россельхознадзора (ФСВПС); наука — PubMed. Проверяйте серию препарата по документам регулятора, не по записи из сервиса.</p></div>
+
+  <div class="card"><h2>6. Прочее</h2>
+    <p>Общие условия экосистемы применимы в полной мере: <a href="https://shray77.github.io/terms.html">shray77.github.io/terms.html</a>. Товарные знаки принадлежат их владельцам и упомянуты для идентификации.</p></div>
+</div>
+</body>
+</html>

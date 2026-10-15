@@ -33,8 +33,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            runner-bin/llama-cli
-            runner-bin/libllama.so
+            runner-bin/
             model/qwen3.gguf
           key: vdl-${{ env.LLAMA_TAG }}-${{ env.MODEL_REV }}
 
@@ -44,8 +43,7 @@ jobs:
           if [ ! -x runner-bin/llama-cli ]; then
             curl -sL "https://github.com/ggml-org/llama.cpp/releases/download/${LLAMA_TAG}/llama-${LLAMA_TAG}-bin-ubuntu-x64.tar.gz" -o /tmp/llama.tar.gz
             tar xzf /tmp/llama.tar.gz -C /tmp
-            find /tmp/llama-* -name 'llama-cli' -exec cp {} runner-bin/ \;
-            find /tmp/llama-* -name 'libllama.so' -exec cp {} runner-bin/ \; || true
+            find /tmp/llama-* \( -name 'llama-cli' -o -name '*.so*' \) -exec cp {} runner-bin/ \;
           fi
           chmod +x runner-bin/llama-cli || true
           LD_LIBRARY_PATH=$PWD/runner-bin runner-bin/llama-cli --version

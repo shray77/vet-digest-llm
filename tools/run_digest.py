@@ -43,7 +43,7 @@ def parse_answer(text: str) -> dict:
     m3 = re.search(r"3\)\s*([\s\S]*)$", t)
     def _clean(b: str) -> str:
         b = re.sub(r"\*\*", "", b)                            # markdown-жирный
-        b = re.sub(r"^\s*[-—•*]\s*", "", b)                    # маркеры списков
+        while re.match(r"^\s*[-—•*]\s*", b): b = re.sub(r"^\s*[-—•*]\s*", "", b)  # маркеры списков
         b = re.sub(r"^[Бб]уллеты по доменам\s*[:.]?\s*", "", b)  # заголовок-мусор
         b = re.sub(r"\s+", " ", b).strip()
         return b
@@ -51,7 +51,12 @@ def parse_answer(text: str) -> dict:
     if m1 and m2 and m3:
         summary = re.sub(r"\s+", " ", m1.group(1)).strip()
         raw_bullets = m2.group(1).strip()
-        bullets = [_clean(b) for b in raw_bullets.split(";")]
+        # модель может дать либо ";", либо маркированные строки "- " — поддержим оба
+        if raw_bullets.count("- ") >= 2 or "\n-" in raw_bullets or raw_bullets.startswith("-"):
+            parts = [ln for ln in raw_bullets.splitlines() if ln.strip()]
+        else:
+            parts = raw_bullets.split(";")
+        bullets = [_clean(b) for b in parts]
         bullets = [b for b in bullets if len(b) > 15][:6]
         practical = re.sub(r"\s+", " ", _clean(m3.group(1))).strip()
         practical = re.sub(r"^3\)\s*", "", practical)

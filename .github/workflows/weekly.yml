@@ -12,9 +12,11 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
-  group: weekly-digest
+  group: pages-vdl
   cancel-in-progress: false
 
 env:
@@ -83,3 +85,11 @@ jobs:
             git pull --rebase -q origin main || true
             git push origin HEAD:main
           fi
+
+      # Деплой Pages ЗДЕСЬ: бот-коммит через GITHUB_TOKEN не триггерит pages.yml
+      # (защита GitHub от рекурсивных воркфлоу) — деплоим в том же ране.
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - uses: actions/deploy-pages@v4

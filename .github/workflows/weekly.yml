@@ -80,6 +80,7 @@ jobs:
 
       - name: Piper TTS (русская аудио-версия дайджеста)
         run: |
+          command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
           mkdir -p runner-piper voice
           if [ ! -x runner-piper/piper ]; then
             curl -sL --retry 3 "${PIPER_URL}" -o /tmp/piper.tar.gz

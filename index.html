@@ -77,6 +77,11 @@ footer a{color:var(--accent);text-decoration:none}
     <ul class="b" id="bullets"></ul>
   </div>
 
+  <div class="card" id="audioCard" style="display:none">
+    <div class="k">Аудио-версия · озвучка Piper (русский голос, офлайн-модель)</div>
+    <audio controls preload="none" style="width:100%" src="data/digest_latest.mp3"></audio>
+  </div>
+
   <div class="card" id="pracCard" style="display:none">
     <div class="k">Что это значит практически</div>
     <p id="practical"></p>
@@ -101,7 +106,7 @@ footer a{color:var(--accent);text-decoration:none}
 </div>
 
 <script>
-const STAT_RU = {flu_flyways:'флайвеев ВПГП', events:'вспышек в мире', signals:'сигналов РФ', pubmed:'PubMed-тезисов', sources_ok:'источников ok'};
+const STAT_RU = {flu_flyways:'флайвеев ВПГП', events:'вспышек в мире', signals:'сигналов РФ', pubmed:'PubMed-тезисов', sources_ok:'источников ok', anomaly_verdict:'аномалия недели (TSPulse)', anomaly_percentile:'перцентиль аномалии'};
 const SRC_RU = {vetflu:'ВПГП-окна', biothreat:'Биоугрозы', vetrecall:'Отзывы РФ', vetdigest:'PubMed', hub:'ВетХаб'};
 async function jget(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(r.status);return r.json();}
 (async()=>{
@@ -116,6 +121,7 @@ async function jget(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw 
     document.getElementById('meta').textContent = 'сгенерирован ' + (d.generated_at||'').replace('T',' ').slice(0,16) + ' UTC';
     document.getElementById('summary').className = '';
     document.getElementById('summary').textContent = d.summary || '—';
+    try{const hr=await fetch('data/digest_latest.mp3',{method:'HEAD'});if(hr.ok)document.getElementById('audioCard').style.display='block';}catch(e){}
     const ul = document.getElementById('bullets'); ul.innerHTML = '';
     for(const b of (d.bullets||[])){const li=document.createElement('li');li.textContent=b;ul.appendChild(li);}
     if(d.practical){document.getElementById('pracCard').style.display='block';document.getElementById('practical').textContent=d.practical;}

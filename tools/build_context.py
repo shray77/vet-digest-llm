@@ -28,6 +28,7 @@ RAW = {
     "signals": "https://raw.githubusercontent.com/shray77/vetrecall-site/main/signals.json",
     "digest": "https://raw.githubusercontent.com/shray77/vetdigest-site/main/digest.json",
     "status": "https://raw.githubusercontent.com/shray77/rss-core-site/main/status.json",
+    "tspulse": "https://raw.githubusercontent.com/shray77/vet-pilots/main/tspulse/latest.json",
 }
 FRESH_H = 30          # протухание источника
 N_ITEMS = 12          # записей на домен
@@ -130,6 +131,23 @@ def main() -> None:
     else:
         lines.append("=== БИОУГРОЗЫ: данные недоступны/протухли ===")
         stats["events"] = 0
+
+    # --- АНОМАЛИЯ НЕДЕЛИ (TSPulse, vet-pilots; источник недельный — окно свежести шире) ---
+    tsp = fetch("tspulse", RAW["tspulse"])
+    if tsp and age_h(tsp.get("generated_at", "")) <= 90:
+        wk = tsp.get("week") or {}
+        lines.append("=== АНОМАЛИЯ НЕДЕЛИ (TSPulse по суточным вспышкам РФ, score 0-1, порог 0.6) ===")
+        lines.append(f"  вердикт: {wk.get('verdict')}; max score {wk.get('max_score')} "
+                     f"({wk.get('percentile_max')} перцентиль истории); "
+                     f"дней выше порога: {wk.get('days_over_threshold')}")
+        wd = tsp.get("week_diseases") or {}
+        if wd:
+            lines.append("  болезни недели: " + "; ".join(f"{k} ({v})" for k, v in list(wd.items())[:4]))
+        stats["anomaly_verdict"] = wk.get("verdict") or "?"
+        stats["anomaly_percentile"] = wk.get("percentile_max")
+    else:
+        lines.append("=== АНОМАЛИЯ НЕДЕЛИ: данные TSPulse недоступны/протухли ===")
+        stats["anomaly_verdict"] = "нет данных"
 
     # --- ФАРМАКОНАДЗОР ---
     sg = fetch("signals", RAW["signals"])

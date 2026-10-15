@@ -23,6 +23,9 @@ env:
   LLAMA_TAG: b11645
   MODEL_URL: https://huggingface.co/Qwen/Qwen3-1.7B-GGUF/resolve/main/Qwen3-1.7B-Q8_0.gguf
   MODEL_REV: Qwen3-1.7B-Q8_0   # ревизия для ключа кэша
+  PIPER_VER: 2023.11.14-2
+  PIPER_URL: https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz
+  VOICE_BASE: https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/ru/ru_RU/dmitri/medium
 
 jobs:
   digest:
@@ -37,7 +40,9 @@ jobs:
           path: |
             runner-bin/
             model/qwen3.gguf
-          key: vdl-${{ env.LLAMA_TAG }}-${{ env.MODEL_REV }}
+            runner-piper/
+            voice/
+          key: vdl2-${{ env.LLAMA_TAG }}-${{ env.MODEL_REV }}-${{ env.PIPER_VER }}
 
       - name: Рантайм llama.cpp (CPU, пин b11645)
         run: |
@@ -72,6 +77,21 @@ jobs:
             --out data/llm_digest.json \
             --archive-dir data/archive
           python3 -c "import json; d=json.load(open('data/llm_digest.json')); print('HEADLINE:', d['headline']); print('bullets:', len(d['bullets']))"
+
+      - name: Piper TTS (русская аудио-версия дайджеста)
+        run: |
+          mkdir -p runner-piper voice
+          if [ ! -x runner-piper/piper ]; then
+            curl -sL --retry 3 "${PIPER_URL}" -o /tmp/piper.tar.gz
+            tar xzf /tmp/piper.tar.gz -C /tmp
+            cp -r /tmp/piper/* runner-piper/
+          fi
+          if [ ! -s voice/ru.onnx ]; then
+            curl -sL --retry 3 "${VOICE_BASE}/ru_RU-dmitri-medium.onnx" -o voice/ru.onnx
+            curl -sL --retry 3 "${VOICE_BASE}/ru_RU-dmitri-medium.onnx.json" -o voice/ru.onnx.json
+          fi
+          ls -la runner-piper/piper voice/
+          python3 tools/speak.py --piper runner-piper/piper --voice voice/ru.onnx --out data/digest_latest
 
       - name: Коммит данных
         run: |
